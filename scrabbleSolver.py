@@ -1,4 +1,5 @@
 import sys
+import re
 
 #   for letter in string
 
@@ -8,6 +9,12 @@ def main():
 
     string = sys.argv[ 1 ]
     if not string:
+        sys.exit( 1 )
+
+    #   check for any non-alpha characters in input
+    digitFound = re.search( "\d", string )
+    if digitFound:
+        print "\tA character that is not a letter was found.\n\tPlease don't use numbers or any weird stuff like that."
         sys.exit( 1 )
 
     #   build player hand
@@ -22,6 +29,7 @@ def main():
     for key in playerHand:
         print key + " = " + str( playerHand[ key ] )
 
+    #   load dictionary file
     
 
 if __name__ == '__main__':
