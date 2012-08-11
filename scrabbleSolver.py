@@ -2,22 +2,31 @@ import sys
 import re
 
 class Counter(dict):
-    def __missing__(self, key):
+    def __missing__( self, key ):
         return 0
 
 def buildWord2( dictWord, letterLookupTable ):
     #    new approach to the buildWord() function
+
+    #   for each letter in dictWord, add to a dictionary
     letterCount = Counter()
     for letter in dictWord:
         letterCount[ letter ] += 1
-    
-    for letter in letterCount:
-        if ( letterLookupTable[ letter ] < letterCount[ letter ] ):
-            return 0
-        else:
-            return 1
-        
 
+    #   for each letter in dictWord
+    for letter in dictWord:
+        #   does that key exist in letterLookupTable?
+        #   if yes, check to make sure there are enough of that letter
+        if letter in letterLookupTable:
+            #   if the # in letterLookupTable is less than the number in letterCount
+            #   the word can't be made
+            if ( letterLookupTable[ letter ] < letterCount[ letter ] ):
+                return 0
+        #   if not, return 0
+        else:
+            return 0
+        
+    return 1
 
 
 def buildWord( stringToMatch, letterLookupTable ):
