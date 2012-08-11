@@ -5,7 +5,9 @@ def buildWord( stringToMatch, letterLookupTable ):
 
     for letter in stringToMatch:
         #   new copy of letterLookupTable
-        table = letterLookupTable
+        table = {}
+        for key in letterLookupTable:
+            table[ key ] = letterLookupTable[ key ]
         #   if the letter is found in table
         if ( letter in table ):
             #   decrement value of table[letter]
