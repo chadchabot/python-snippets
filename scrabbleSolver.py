@@ -29,6 +29,19 @@ def buildWord2( dictWord, letterLookupTable ):
     return 1
 
 
+def calculateScore( word ):
+    scoreTable = ( {'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10 } )
+
+#    for key in scoreTable:
+#        print str( key ) + " = " + str( scoreTable[ key ] )
+
+    wordScore = 0
+    for letter in word:
+        wordScore += scoreTable[ letter ]
+    
+    return wordScore
+
+   
 def buildWord( stringToMatch, letterLookupTable ):
 
     for letter in stringToMatch:
@@ -88,6 +101,7 @@ def main():
     
 #    for key in playerHand:
 #        print key + " = " + str( playerHand[ key ] )
+#    print "\t -- " + str( playerHand )
 
     #   load dictionary file
     with open( "/usr/share/dict/words" ) as fp:
@@ -95,7 +109,7 @@ def main():
     
     #   need a place to store words that can be made from input string
     wordList = []
-    print "\t -- " + str( playerHand )
+
     #   go through each word in the dict file
     for word in dict_file:
         #   trim the newline character
@@ -115,8 +129,8 @@ def main():
     
     print "The longest word(s) to be made given [" + string + "]:"
     for word in longest:
-        print word
-        
+        print str( word ) + " is worth " + str( calculateScore( word ) ) + " points"
+
 
 if __name__ == '__main__':
     main()
