@@ -1,21 +1,39 @@
 import sys
 import re
 
-class Counter(dict):
+class Counter( dict ):
     def __missing__( self, key ):
         return 0
+    def __keyerror__( self, key ):
+        print "no entry for [" + key + "]"
+        return 0
 
-def buildWord2( dictWord, letterLookupTable ):
+def testWord3( dictWord, letterLookupTable ):
+    #   for each letter in dictWord, add to a dictionary
+    letterCount = Counter()
+    for letter in dictWord:
+        if letter in letterLookupTable:
+            letterCount[ letter ] += 1
+            if ( letterLookupTable[ letter ] < letterCount[ letter ] ):
+                return 0
+        else:
+            return 0
+
+    return 1
+
+def testWord2( dictWord, letterLookupTable ):
     #    new approach to the buildWord() function
 
     #   for each letter in dictWord, add to a dictionary
     letterCount = Counter()
     for letter in dictWord:
         letterCount[ letter ] += 1
+        #   could the next section be incorporated here to reduce the number of 
+        #   iterations through dictWord?
 
     #   for each letter in dictWord
     for letter in dictWord:
-        #   does that key exist in letterLookupTable?
+        #   does that letter exist in letterLookupTable?
         #   if yes, check to make sure there are enough of that letter
         if letter in letterLookupTable:
             #   if the # in letterLookupTable is less than the number in letterCount
@@ -30,7 +48,14 @@ def buildWord2( dictWord, letterLookupTable ):
 
 
 def calculateScore( word ):
-    scoreTable = ( {'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10 } )
+    """  
+    reference for point values
+    https://en.wikipedia.org/wiki/Scrabble_letter_distributions
+    """
+    scoreTable = ( {'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2,
+                    'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1,
+                    'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1,
+                    'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10 } )
 
 #    for key in scoreTable:
 #        print str( key ) + " = " + str( scoreTable[ key ] )
@@ -41,8 +66,11 @@ def calculateScore( word ):
     
     return wordScore
 
-   
-def buildWord( stringToMatch, letterLookupTable ):
+
+#   BROKEN
+#   does not function the way it is expected to.
+#   
+def testWord( stringToMatch, letterLookupTable ):
 
     for letter in stringToMatch:
         #   new copy of letterLookupTable
@@ -80,6 +108,7 @@ def longestWord( wordList ):
 
 def main():
     if ( len( sys.argv ) < 2 ):
+        print "\tYou need to supply an input string"
         sys.exit( 1 )
 
     string = sys.argv[ 1 ]
@@ -108,20 +137,24 @@ def main():
         dict_file = fp.readlines()
     
     #   need a place to store words that can be made from input string
-    wordList = []
+    wordList = Counter()
 
     #   go through each word in the dict file
     for word in dict_file:
         #   trim the newline character
         word = word[:-1]
         #   is 'word' longer than the length of input string?
-        #   can this check be combined with the readlines() or dict_file building step?
-        #   use a system call (grep?) and pipe results to dict_file?
+        """
+            Can this check be combined with the readlines() or dict_file building step?
+            Use a system call (grep?) and pipe results to dict_file?
+            If the script is a "run once and quit", this is an acceptable approach.
+            If the script has a longer life/persistance, then all words must be loaded
+        """
         if ( len( word ) <= playerHandLength ):
             #   check if 'word' can be built using 'playerHand'
-            if ( 1 == buildWord2( word, playerHand ) ):
+            if ( 1 == testWord3( word, playerHand ) ):
                 #   add to wordList
-                wordList.append( word )
+                wordList[ word ] = calculateScore( word )
     
 #    print wordList
     #   check for longest word
@@ -129,8 +162,15 @@ def main():
     
     print "The longest word(s) to be made given [" + string + "]:"
     for word in longest:
-        print str( word ) + " is worth " + str( calculateScore( word ) ) + " points"
+        print "'" + str( word ) + "' is worth " + str( wordList[ word ] )+ " points"
 
+    highestValue = 0
+    print "The highest scoring words that can be made from [%s] are:" % string
+    for key, value in sorted( wordList.iteritems(), key=lambda ( k,v ): ( v, k ), reverse=True ):
+        if value > highestValue:
+            highestValue = value
+        if value == highestValue:
+            print "'%s' is worth %s points" % ( key, value )
 
 if __name__ == '__main__':
     main()
