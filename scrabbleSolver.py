@@ -8,44 +8,21 @@ class Counter( dict ):
         print "no entry for [" + key + "]"
         return 0
 
-def testWord3( dictWord, letterLookupTable ):
+def testWord( dictWord, letterLookupTable ):
     #   for each letter in dictWord, add to a dictionary
     letterCount = Counter()
+    blanksRequired = 0
     for letter in dictWord:
         if letter in letterLookupTable:
             letterCount[ letter ] += 1
             if ( letterLookupTable[ letter ] < letterCount[ letter ] ):
                 return 0
         else:
-            return 0
-
-    return 1
-
-def testWord2( dictWord, letterLookupTable ):
-    #    new approach to the buildWord() function
-
-    #   for each letter in dictWord, add to a dictionary
-    letterCount = Counter()
-    for letter in dictWord:
-        letterCount[ letter ] += 1
-        #   could the next section be incorporated here to reduce the number of 
-        #   iterations through dictWord?
-
-    #   for each letter in dictWord
-    for letter in dictWord:
-        #   does that letter exist in letterLookupTable?
-        #   if yes, check to make sure there are enough of that letter
-        if letter in letterLookupTable:
-            #   if the # in letterLookupTable is less than the number in letterCount
-            #   the word can't be made
-            if ( letterLookupTable[ letter ] < letterCount[ letter ] ):
+            if blanksRequired < letterLookupTable[ '?' ]:
+                blanksRequired += 1
+            else:
                 return 0
-        #   if not, return 0
-        else:
-            return 0
-        
     return 1
-
 
 def calculateScore( word ):
     """  
@@ -66,28 +43,13 @@ def calculateScore( word ):
     
     return wordScore
 
-
-#   BROKEN
-#   does not function the way it is expected to.
-#   
-def testWord( stringToMatch, letterLookupTable ):
-
-    for letter in stringToMatch:
-        #   new copy of letterLookupTable
-        table = Counter()
-        for key in letterLookupTable:
-            table[ key ] = letterLookupTable[ key ]
-        #   if the letter is found in table
-        if ( letter in table ):
-            if ( table[ letter ] > 0 ):
-                #   decrement value of table[letter]
-                table[ letter ] -= 1
-            else:
-                print str( letter ) + " = " + str( table[ letter ] )
-        else:
-            return 0
-    print stringToMatch + "\t -- " + str( table )
-    return 1
+def buildPlayerHand( playerTiles ):
+    playerHand = Counter()
+    playerHand.clear()
+    for letter in playerTiles:
+        #   add to lookup table
+        playerHand[ letter ] += 1
+    return playerHand
 
 def longestWord( wordList ):
     length = 0
@@ -111,7 +73,7 @@ def main():
         print "\tYou need to supply an input string"
         sys.exit( 1 )
 
-    string = sys.argv[ 1 ]
+    string = sys.argv[ 1 ].lower()
     if not string:
         sys.exit( 1 )
 
@@ -122,14 +84,11 @@ def main():
         sys.exit( 1 )
 
     #   build player hand
-    playerHand = Counter()
+    playerHand = buildPlayerHand( string )
     playerHandLength = len( string )
-    for letter in string:
-        #   add to lookup table
-        playerHand[ letter ] += 1
     
-#    for key in playerHand:
-#        print key + " = " + str( playerHand[ key ] )
+    for key in playerHand:
+        print key + " = " + str( playerHand[ key ] )
 #    print "\t -- " + str( playerHand )
 
     #   load dictionary file
@@ -152,9 +111,9 @@ def main():
         """
         if ( len( word ) <= playerHandLength ):
             #   check if 'word' can be built using 'playerHand'
-            if ( 1 == testWord3( word, playerHand ) ):
+            if ( 1 == testWord( word, playerHand ) ):
                 #   add to wordList
-                wordList[ word ] = calculateScore( word )
+                wordList[ word ] = calculateScore( word.lower() )
     
 #    print wordList
     #   check for longest word
