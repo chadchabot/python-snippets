@@ -1,31 +1,85 @@
+#!/usr/bin/python
+#Copyright 2012 Chad Chabot
+#
+#chad@chadchabot.com
+#github.com/chadchabot
+
 import sys
 import re
+from pydoc import help
 
 class Counter( dict ):
+    """
+    Counter is an extension of the dict class, where keys that are not
+    found in the dict will not return an error, but will return a value of 0.
+    The error message should be re-directed towards an error log.
+    """
+
     def __missing__( self, key ):
+        #print "missing key error for [" + key + "]"
         return 0
     def __keyerror__( self, key ):
-        print "no entry for [" + key + "]"
+        #print "key error for [" + key + "]"
         return 0
 
+
 def testWord( dictWord, letterLookupTable ):
+    """
+    testWord() checks to see if 'dictWord' can be created using the contents
+    of 'letterLookupTable'.
+    
+    Parameters:
+        dictWord
+            A string of arbitrary size.
+        
+        letterLookupTable
+            A Counter object containing a tally of the letters in the player's
+            hand.
+    
+    
+    The testWord() function compares a word from a dictionary or other source
+    (the 'dictWord' param) against a supplied lookup table (a Counter object)
+    containing from the tiles in the player's hand ('letterLookupTable' param).
+
+    If 'dictWord' can be formed using the letters in 'letterLookupTable',
+    testWord() returns the value of the word, according to the point
+    distribution defined in calculateScore().
+    
+    If 'dictWord' cannot be formed, testWord() returns -1.
+    """
     #   for each letter in dictWord, add to a dictionary
     letterCount = Counter()
+    bonusValue = 50
     blanksRequired = 0
+    wordScore = 0
     for letter in dictWord:
         if letter in letterLookupTable:
             letterCount[ letter ] += 1
             if ( letterLookupTable[ letter ] < letterCount[ letter ] ):
-                return 0
+                return -1
+            else:
+                wordScore += calculateScore( letter )
         else:
             if blanksRequired < letterLookupTable[ '?' ]:
                 blanksRequired += 1
             else:
-                return 0
-    return 1
+                return -1
+
+    #   if giving the player a bonus for using all 7 tiles, use the return below
+    #return wordScore if len( dictWord ) != 7 else wordScore + bonusValue
+    return wordScore
+
 
 def calculateScore( word ):
-    """  
+    """
+    calculateScore() totals the point value of the parameter 'word'.
+    
+    parameters:
+        word
+            a string or single character, made up of alpha characters and
+            question marks ["?"]
+            
+    
     reference for point values
     https://en.wikipedia.org/wiki/Scrabble_letter_distributions
     """
@@ -44,6 +98,18 @@ def calculateScore( word ):
     return wordScore
 
 def buildPlayerHand( playerTiles ):
+    """
+    buildPlayerHand() populates and returns a Counter based on the supplied string.
+    
+    Parameters:
+        playerTiles
+            A string consisting of letters and/or question marks (provided the
+            string has already been checked for valid characters).
+    
+    Return:
+        playerHand, the tally of letters contained in 'playerTiles'.
+    """
+    
     playerHand = Counter()
     playerHand.clear()
     for letter in playerTiles:
@@ -51,12 +117,22 @@ def buildPlayerHand( playerTiles ):
         playerHand[ letter ] += 1
     return playerHand
 
-def longestWord( wordList ):
+def findLongestWord( wordList ):
+    """
+    findLongestWord() takes in a list of words and returns the longest, or a list
+    containing the longest words.
+    
+    Parameters:
+        wordList
+            an unordered list of words.
+    
+    Return:
+        'longestWord' an array of the longest words in 'wordList'.
+    """
     length = 0
     longestWord = []
     
     for word in wordList:
-        #   here is where I would add in a calculator for word value
         wordLength = len( word )
         if ( wordLength == length ):
             #   add to list
@@ -68,6 +144,10 @@ def longestWord( wordList ):
 
     return longestWord
 
+def validateInput( string ):
+    badCharacterFound = re.search("[^a-zA-Z?]", string )
+    return True if badCharacterFound else False
+
 def main():
     if ( len( sys.argv ) < 2 ):
         print "\tYou need to supply an input string"
@@ -78,8 +158,7 @@ def main():
         sys.exit( 1 )
 
     #   check for any non-alpha characters in input
-    digitFound = re.search( "\d", string )
-    if digitFound:
+    if validateInput( string ):
         print "\tA character that is not a letter was found.\n\tPlease don't use numbers or any weird stuff like that."
         sys.exit( 1 )
 
@@ -87,8 +166,8 @@ def main():
     playerHand = buildPlayerHand( string )
     playerHandLength = len( string )
     
-    for key in playerHand:
-        print key + " = " + str( playerHand[ key ] )
+#    for key in playerHand:
+#        print key + " = " + str( playerHand[ key ] )
 #    print "\t -- " + str( playerHand )
 
     #   load dictionary file
@@ -111,13 +190,14 @@ def main():
         """
         if ( len( word ) <= playerHandLength ):
             #   check if 'word' can be built using 'playerHand'
-            if ( 1 == testWord( word, playerHand ) ):
+            wordScore = testWord( word, playerHand )
+            if ( -1 != wordScore ):
                 #   add to wordList
-                wordList[ word ] = calculateScore( word.lower() )
+                wordList[ word ] = wordScore
     
-#    print wordList
+    #print wordList
     #   check for longest word
-    longest = longestWord( wordList )
+    longest = findLongestWord( wordList )
     
     print "The longest word(s) to be made given [" + string + "]:"
     for word in longest:
