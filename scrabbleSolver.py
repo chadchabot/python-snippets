@@ -23,7 +23,7 @@ class Counter( dict ):
         return 0
 
 
-def testWord( dictWord, letterLookupTable ):
+def testWord( dictWord, letterLookupTable, must_includes ):
     """
     testWord() checks to see if 'dictWord' can be created using the contents
     of 'letterLookupTable'.
@@ -52,6 +52,11 @@ def testWord( dictWord, letterLookupTable ):
     bonusValue = 50
     blanksRequired = 0
     wordScore = 0
+    
+    for letter in must_includes:
+        if (dictWord.find( letter ) == -1):
+            return -1
+    
     for letter in dictWord:
         if letter in letterLookupTable:
             letterCount[ letter ] += 1
@@ -97,7 +102,7 @@ def calculateScore( word ):
     
     return wordScore
 
-def buildPlayerHand( playerTiles ):
+def buildPlayerHand( playerTiles, must_includes ):
     """
     buildPlayerHand() populates and returns a Counter based on the supplied string.
     
@@ -115,6 +120,10 @@ def buildPlayerHand( playerTiles ):
     for letter in playerTiles:
         #   add to lookup table
         playerHand[ letter ] += 1
+    
+    for letter in must_includes:
+        playerHand[ letter ] += 1
+
     return playerHand
 
 def findLongestWord( wordList ):
@@ -153,17 +162,23 @@ def main():
         print "\tYou need to supply an input string"
         sys.exit( 1 )
 
+    #   what about a flag to show all/some/limited number of results, not just top?
+
     string = sys.argv[ 1 ].lower()
     if not string:
         sys.exit( 1 )
 
+    must_includes = ''
+    if ( len( sys.argv ) == 3):
+        must_includes = sys.argv[ 2 ].lower()
+        
     #   check for any non-alpha characters in input
     if validateInput( string ):
         print "\tA character that is not a letter was found.\n\tPlease don't use numbers or any weird stuff like that."
         sys.exit( 1 )
 
     #   build player hand
-    playerHand = buildPlayerHand( string )
+    playerHand = buildPlayerHand( string, must_includes )
     playerHandLength = len( string )
     
 #    for key in playerHand:
@@ -190,7 +205,7 @@ def main():
         """
         if ( len( word ) <= playerHandLength ):
             #   check if 'word' can be built using 'playerHand'
-            wordScore = testWord( word, playerHand )
+            wordScore = testWord( word, playerHand, must_includes )
             if ( -1 != wordScore ):
                 #   add to wordList
                 wordList[ word ] = wordScore
